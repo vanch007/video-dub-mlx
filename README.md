@@ -3,7 +3,7 @@
 本项目是 [bilibili/Index-Translate/video-dub](https://github.com/bilibili/Index-Translate/tree/main/video-dub) 与 [inference/echo-s2st](https://github.com/bilibili/Index-Translate/tree/main/inference/echo-s2st) 的 Apple Silicon MLX 原生加速版。
 
 - Hugging Face 模型权重: [vanch007/Index-Echo-S2ST-9B-MLX](https://huggingface.co/vanch007/Index-Echo-S2ST-9B-MLX)
-- GitHub 开源代码库: [vanch007/echo-s2st-mlx](https://github.com/vanch007/echo-s2st-mlx)
+- GitHub 开源代码库: [vanch007/video-dub-mlx](https://github.com/vanch007/video-dub-mlx)
 
 ## 核心特性
 
