@@ -25,6 +25,10 @@ TARGET_LANGS = ("en", "es", "ja", "zh")
 class MLXEchoS2ST:
     def __init__(self, model_dir: str):
         self.model_dir = os.path.abspath(model_dir)
+        if not os.path.isdir(self.model_dir) or not os.path.exists(os.path.join(self.model_dir, 'bridge', 'mapper.safetensors')):
+            print(f"[MLXEchoS2ST] Local model weights not found at {self.model_dir}. Auto-downloading from vanch007/Index-Echo-S2ST-9B-MLX...")
+            from huggingface_hub import snapshot_download
+            self.model_dir = snapshot_download('vanch007/Index-Echo-S2ST-9B-MLX', local_dir=self.model_dir)
 
         # Set environment for vendored components
         os.environ["DUBBING_HOME"] = self.model_dir

@@ -48,8 +48,10 @@ def main():
         parser.error(f"Input file not found: {input_path}")
 
     model_dir = os.path.abspath(args.model_dir)
-    if not os.path.isdir(model_dir):
-        parser.error(f"Model directory not found: {model_dir}")
+    if not os.path.isdir(model_dir) or not os.path.exists(os.path.join(model_dir, 'bridge', 'mapper.safetensors')):
+        print(f"[Echo-S2ST] Local model weights not found at {model_dir}. Auto-downloading from vanch007/Index-Echo-S2ST-9B-MLX...")
+        from huggingface_hub import snapshot_download
+        model_dir = snapshot_download('vanch007/Index-Echo-S2ST-9B-MLX', local_dir=model_dir)
 
     print("=" * 60)
     print(f"Echo-S2ST MLX (Apple Silicon M3 Max Native Acceleration)")
