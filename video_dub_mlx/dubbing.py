@@ -15,7 +15,7 @@ import soundfile as sf
 import mlx.core as mx
 
 from mlx_echo_s2st.stlm_mlx import MLXEchoSTLM, _has_cjk
-from mlx_echo_s2st.cosyvoice_wrapper import MLXCosyVoiceSynthesizer
+from video_dub_mlx.cosyvoice_mlx import PureMLXCosyVoiceSynthesizer as MLXCosyVoiceSynthesizer
 from mlx_echo_s2st import media, segment, timeline, subtitles, separate
 
 VIDEO_EXTS = {".mp4", ".mkv", ".mov", ".avi", ".flv", ".webm", ".ts"}
