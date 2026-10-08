@@ -1,0 +1,29 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Weights & Data
+weights/
+*.safetensors
+*.pt
+*.onnx
+*.bin
+*.fst
+stems/
+
+# Output directories & media
+output/
+*.mp4
+*.wav
+*.mp3
+*.incomplete
+
+# macOS
+.DS_Store
+.cache/

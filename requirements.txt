@@ -1,0 +1,14 @@
+mlx>=0.21.0
+mlx-lm>=0.21.0
+torch>=2.2.0
+torchaudio>=2.2.0
+transformers>=4.45.0
+soundfile>=0.12.0
+librosa>=0.10.0
+silero-vad>=5.1.0
+demucs>=4.0.0
+inflect
+conformer
+hydra-core
+hyperpyyaml
+onnxruntime
