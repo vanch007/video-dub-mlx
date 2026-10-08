@@ -93,8 +93,8 @@ def create_app(model_dir: str = None) -> FastAPI:
             if d > S2TT_MAX_S:
                 return JSONResponse({'ok': False, 'error': f'audio {d:.1f}s exceeds {S2TT_MAX_S:.0f}s limit'}, 400)
             with lock:
-                res = model.stlm.translate(src, lang=lang)
-            return {'ok': True, 'zh': res['zh'], 'text': res['tgt_raw'], 'lang': lang, 'dur': round(d, 2)}
+                hyp, zh, tgt_raw, _, _ = model.stlm.generate(src, lang=lang)
+            return {'ok': True, 'zh': zh, 'text': tgt_raw, 'lang': lang, 'dur': round(d, 2)}
         except Exception as e:
             traceback.print_exc()
             return JSONResponse({'ok': False, 'error': str(e)[-400:]}, 500)

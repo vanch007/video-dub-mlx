@@ -119,11 +119,14 @@ class MLXEchoSTLM:
         args = qwen3_5.ModelArgs.from_dict(cfg)
         self.model = qwen3_5.Model(args)
 
-        # Load weights
+        # Load pure MLX weights
         st_file = os.path.join(llm_path, "model.safetensors")
-        print(f"[MLXEchoSTLM] Loading weights from {st_file}...", flush=True)
+        print(f"[MLXEchoSTLM] Loading pure MLX weights from {st_file}...", flush=True)
         weights = mx.load(st_file)
-        sanitized = self.model.sanitize(weights)
+        if any(k.startswith("language_model.") for k in weights.keys()):
+            sanitized = weights
+        else:
+            sanitized = self.model.sanitize(weights)
         self.model.load_weights(list(sanitized.items()), strict=False)
         print("[MLXEchoSTLM] Qwen3.5-9B loaded successfully into MLX!", flush=True)
 
