@@ -20,7 +20,7 @@ def main():
     parser.add_argument("input", help="Path to input audio (.wav, .mp3, etc.) or video (.mp4, .mkv, .mov, etc.)")
     parser.add_argument("-l", "--lang", required=True, choices=TARGET_LANGS,
                         help="TARGET language: en (English), es (Spanish), ja (Japanese), zh (Chinese)")
-    parser.add_argument("-o", "--out", default=None,
+    parser.add_argument("-o", "--output", "--out", dest="out", default=None,
                         help="Output path (default: <input>.dub_<lang>.<ext>)")
     parser.add_argument("-m", "--model-dir",
                         default=os.environ.get("S2ST_MODEL_DIR", os.path.join(_ROOT, "weights/Index-Echo-S2ST-9B")),

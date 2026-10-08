@@ -223,16 +223,22 @@ class MLXEchoS2ST:
                 media.mix_audio(bgm_track, dubbed_audio_path, mixed_audio, base_vol=bgm_vol, over_vol=voice_vol, sr=sr)
                 final_audio = mixed_audio
 
-            # Export subtitles if requested
+            # Export subtitles & segments.json manifest (aligning with Index-Translate/video-dub)
             bi_srt = None
             if srt and sub_spans:
                 srt_base = os.path.splitext(out_video)[0]
                 subtitles.write_srt(f"{srt_base}.srt", sub_spans, sub_tgts)
                 bi_srt = f"{srt_base}.bilingual.srt"
                 subtitles.write_bilingual_srt(bi_srt, sub_spans, sub_srcs, sub_tgts)
-                print(f"[MLXEchoS2ST] Subtitles saved:
+                manifest_path = f"{srt_base}.segments.json"
+                with open(manifest_path, 'w', encoding='utf-8') as mf:
+                    json.dump([{"start": s, "end": e, "src": src, "text": tgt}
+                               for (s, e), src, tgt in zip(sub_spans, sub_srcs, sub_tgts)],
+                              mf, ensure_ascii=False, indent=2)
+                print(f"[MLXEchoS2ST] Subtitles & Manifest saved:
   - {srt_base}.srt
-  - {bi_srt}")
+  - {bi_srt}
+  - {manifest_path}")
 
             # Mux back into video container (burning bilingual subtitles by default)
             if burn_subtitles and bi_srt and os.path.isfile(bi_srt):
