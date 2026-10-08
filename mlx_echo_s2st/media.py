@@ -1,16 +1,44 @@
-"""ffmpeg helpers: audio extraction, muxing, tempo adjustment."""
+"""ffmpeg helpers: audio extraction, muxing, tempo adjustment, and hardware-accelerated subtitle burning."""
 
 import json
 import os
 import subprocess
 import tempfile
+import platform
 
 
 def run(cmd, **kw):
     proc = subprocess.run(cmd, capture_output=True, text=True, **kw)
     if proc.returncode != 0:
-        raise RuntimeError(f"command failed: {' '.join(cmd)}\n{proc.stderr[-2000:]}")
+        raise RuntimeError(f"command failed: {' '.join(cmd)}
+{proc.stderr[-2000:]}")
     return proc
+
+
+def get_ffmpeg_binary() -> str:
+    """Locate an ffmpeg binary with libass subtitle support (referencing VideoLingo step12)."""
+    candidates = [
+        "/Users/vanch/pinokio/bin/miniconda/envs/videolingo/lib/python3.10/site-packages/imageio_ffmpeg/binaries/ffmpeg-macos-aarch64-v7.1",
+    ]
+    try:
+        import imageio_ffmpeg
+        exe = imageio_ffmpeg.get_ffmpeg_exe()
+        if exe and os.path.exists(exe):
+            candidates.append(exe)
+    except Exception:
+        pass
+
+    for c in candidates:
+        if os.path.isfile(c) and os.access(c, os.X_OK):
+            return c
+
+    try:
+        res = subprocess.run(["ffmpeg", "-filters"], capture_output=True, text=True, timeout=5)
+        if "subtitles" in res.stdout:
+            return "ffmpeg"
+    except Exception:
+        pass
+    return "ffmpeg"
 
 
 def probe_duration(path):
@@ -63,6 +91,31 @@ def mux_video_audio(video_path, audio_path, out_path, audio_codec="aac"):
         "-c:v", "copy", "-c:a", audio_codec, "-shortest", out_path,
     ])
     return out_path
+
+
+def mux_video_audio_with_subtitles(video_path, audio_path, out_path, srt_path=None,
+                                    burn_subtitles=True, audio_codec="aac"):
+    """Replace audio track and burn subtitles using VideoToolbox hardware acceleration."""
+    ff_bin = get_ffmpeg_binary()
+    if burn_subtitles and srt_path and os.path.isfile(srt_path):
+        # Cinema-grade style referencing VideoLingo step12
+        style = "FontSize=15\,FontName=Arial Unicode MS\,PrimaryColour=&H00FFFFFF&\,OutlineColour=&H000000&\,OutlineWidth=1.5\,ShadowColour=&H80000000&\,Alignment=2\,MarginV=18\,BorderStyle=1"
+        vf = f"subtitles='{srt_path}':force_style='{style}'"
+        cmd = [
+            ff_bin, "-y", "-i", video_path, "-i", audio_path,
+            "-vf", vf,
+            "-map", "0:v:0", "-map", "1:a:0",
+            "-c:v", "h264_videotoolbox", "-b:v", "4M",
+            "-c:a", audio_codec, "-b:a", "192k",
+            "-shortest", out_path,
+        ]
+        try:
+            run(cmd)
+            return out_path
+        except Exception as e:
+            print(f"[media] Subtitle burning failed ({e}), falling back to plain muxing...")
+
+    return mux_video_audio(video_path, audio_path, out_path, audio_codec)
 
 
 def mix_audio(base_wav, over_wav, out_wav, base_vol=1.0, over_vol=1.0, sr=24000):

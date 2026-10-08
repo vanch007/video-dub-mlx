@@ -41,6 +41,10 @@ def main():
                         help="Reuse an existing pre-separated vocal wav file")
     parser.add_argument("--instr-wav", default=None,
                         help="Reuse an existing pre-separated background instrumental/ambient wav file")
+    parser.add_argument("--burn-subtitles", dest="burn_subtitles", action="store_true", default=True,
+                        help="Burn bilingual subtitles into video frames using Apple Silicon VideoToolbox (default: on)")
+    parser.add_argument("--no-burn-subtitles", dest="burn_subtitles", action="store_false",
+                        help="Do not burn subtitles into video (only export .srt files)")
     args = parser.parse_args()
 
     input_path = os.path.abspath(args.input)
@@ -77,6 +81,7 @@ def main():
             voice_vol=args.voice_vol,
             speech_wav=args.speech_wav,
             instr_wav=args.instr_wav,
+            burn_subtitles=args.burn_subtitles,
         )
     else:
         out_path = model.dub(input_path, lang=args.lang, out_path=args.out)

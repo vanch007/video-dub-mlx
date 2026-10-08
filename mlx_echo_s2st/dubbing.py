@@ -110,7 +110,7 @@ class MLXEchoS2ST:
         return wav_np, self.sample_rate, info
 
     def dub_video(self, video_path: str, lang: str = "en", out_video: Optional[str] = None,
-                  max_seg: float = 9.5, srt: bool = True, do_separate: bool = True,
+                  max_seg: float = 9.5, srt: bool = True, burn_subtitles: bool = True, do_separate: bool = True,
                   keep_bgm: bool = True, bgm_vol: float = 0.9, voice_vol: float = 1.0,
                   speech_wav: Optional[str] = None, instr_wav: Optional[str] = None) -> str:
         """
@@ -223,16 +223,24 @@ class MLXEchoS2ST:
                 media.mix_audio(bgm_track, dubbed_audio_path, mixed_audio, base_vol=bgm_vol, over_vol=voice_vol, sr=sr)
                 final_audio = mixed_audio
 
-            # Mux back into video container
-            print(f"[MLXEchoS2ST] Muxing final audio track into video container...")
-            media.mux_video_audio(video_path, final_audio, out_video)
-
             # Export subtitles if requested
+            bi_srt = None
             if srt and sub_spans:
                 srt_base = os.path.splitext(out_video)[0]
                 subtitles.write_srt(f"{srt_base}.srt", sub_spans, sub_tgts)
-                subtitles.write_bilingual_srt(f"{srt_base}.bilingual.srt", sub_spans, sub_srcs, sub_tgts)
-                print(f"[MLXEchoS2ST] Subtitles saved:\n  - {srt_base}.srt\n  - {srt_base}.bilingual.srt")
+                bi_srt = f"{srt_base}.bilingual.srt"
+                subtitles.write_bilingual_srt(bi_srt, sub_spans, sub_srcs, sub_tgts)
+                print(f"[MLXEchoS2ST] Subtitles saved:
+  - {srt_base}.srt
+  - {bi_srt}")
+
+            # Mux back into video container (burning bilingual subtitles by default)
+            if burn_subtitles and bi_srt and os.path.isfile(bi_srt):
+                print(f"[MLXEchoS2ST] Burning bilingual subtitles into video with VideoToolbox hardware acceleration...")
+                media.mux_video_audio_with_subtitles(video_path, final_audio, out_video, srt_path=bi_srt, burn_subtitles=True)
+            else:
+                print(f"[MLXEchoS2ST] Muxing final audio track into video container...")
+                media.mux_video_audio(video_path, final_audio, out_video)
 
             print(f"[MLXEchoS2ST] Successfully generated dubbed video: {out_video}")
             return out_video
